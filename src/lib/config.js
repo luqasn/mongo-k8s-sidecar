@@ -109,4 +109,9 @@ module.exports = {
   k8sClusterDomain: getK8sClusterDomain(),
   mongoPort: getMongoDbPort(),
   isConfigRS: isConfigRS(),
+  ssl: process.env.MONGODB_SSL_ENABLE == "true",
+  sslValidate: process.env.MONGODB_SSL_VALIDATE == "true",
+  sslCA: process.env.MONGODB_SSL_CA || null,
+  sslCert: process.env.MONGODB_SSL_CERT || null,
+  sslKey: process.env.MONGODB_SSL_KEY || null,
 };

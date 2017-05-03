@@ -159,7 +159,8 @@ var memberShouldBeRemoved = function(member) {
 var notInReplicaSet = function(db, pods, done) {
   var createTestRequest = function(pod) {
     return function(completed) {
-      mongo.isInReplSet(pod.status.podIP, completed);
+      var hostname = getPodStableNetworkAddress(pod);
+      mongo.isInReplSet(hostname, completed);
     };
   };
 
@@ -278,13 +279,21 @@ var getPodIpAddressAndPort = function(pod) {
  * @returns string the k8s MongoDB stable network address, or undefined.
  */
 var getPodStableNetworkAddressAndPort = function(pod) {
-  if (!config.k8sMongoServiceName || !pod || !pod.metadata || !pod.metadata.name || !pod.metadata.namespace) {
+  var address = getPodStableNetworkAddress(pod);
+  if (!address)
+    return;
+  var mongoPort = config.mongoPort;
+  return address + ":" + mongoPort
+};
+
+var getPodStableNetworkAddress = function(pod) {
+  if (!config.k8sMongoServiceName || !pod.metadata || !pod.metadata.name || !pod.metadata.namespace) {
+    console.log("can not get stable name", config, pod.metadata);
     return;
   }
 
   var clusterDomain = config.k8sClusterDomain;
-  var mongoPort = config.mongoPort;
-  return pod.metadata.name + "." + config.k8sMongoServiceName + "." + pod.metadata.namespace + ".svc." + clusterDomain + ":" + mongoPort;
+  return pod.metadata.name + "." + config.k8sMongoServiceName + "." + pod.metadata.namespace + ".svc." + clusterDomain;
 };
 
 module.exports = {

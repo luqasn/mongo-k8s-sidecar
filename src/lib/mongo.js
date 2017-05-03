@@ -18,7 +18,21 @@ var getDb = function(host, done) {
   }
 
   host = host || localhost;
-  var mongoDb = new Db(config.database, new MongoServer(host, config.mongoPort));
+  var options = {
+    ssl: config.ssl,
+    sslValidate: config.sslValidate,
+    sslCA: config.sslCA,
+    sslCert: config.sslCert,
+    sslKey: config.sslKey
+  };
+
+  // disable ssl cert validation if connecting to ourselves
+  if (host === localhost)
+    options.sslValidate = false;
+
+  console.log('connecting to mongodb at' + host + ":" + config.mongoPort);
+
+  var mongoDb = new Db(config.database, new MongoServer(host, config.mongoPort, options));
   mongoDb.open(function (err, db) {
     if (err) {
       return done(err);
